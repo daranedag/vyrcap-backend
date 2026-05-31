@@ -19,7 +19,17 @@ function buildClient(apiKey: string): InsforgeClient {
     throw new ApiError(500, "Could not initialize Insforge SDK client");
   }
 
-  return createClient(env.INSFORGE_URL, apiKey);
+  const client = createClient({
+    baseUrl: env.INSFORGE_URL,
+    anonKey: apiKey,
+    isServerMode: true
+  });
+
+  if (typeof client?.from !== "function" && typeof client?.database?.from === "function") {
+    client.from = (...args: any[]) => client.database.from(...args);
+  }
+
+  return client;
 }
 
 export function getInsforgePublicClient(): InsforgeClient {
